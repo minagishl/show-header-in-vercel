@@ -1,11 +1,13 @@
 'use strict';
 
-import dns, { lookup } from 'dns';
+import dns from 'dns';
 import GetGeo from '@/components/GetGeo';
+import GetGeoIP from '@/components/GetGeoIP';
 import { headers } from 'next/headers';
 import { LRUCache } from 'lru-cache';
 import mobile from 'is-mobile';
 import GetParams from '@/components/GetParams';
+import { useSearchParams } from 'next/navigation';
 
 const cache = new LRUCache({
 	max: 500, // The maximum size of the cache
@@ -21,6 +23,10 @@ type list = {
 export default async function Page() {
 	let data: list = {};
 	const domains: string[] = ['spmode.ne.jp', 'au-net.ne.jp'];
+	const params = useSearchParams();
+
+	// Query string
+	const language = params.get('language') || 'en';
 
 	// User IP address
 	const headersList = headers();
@@ -40,6 +46,7 @@ export default async function Page() {
 			await lookupService(ip)
 				.then((result) => {
 					data = result;
+					cache.set(ip, data);
 				})
 				.catch((error) => {
 					console.log(error);
@@ -53,7 +60,6 @@ export default async function Page() {
 				if (error) {
 					reject(error);
 				} else {
-					cache.set(ip, data);
 					dns.promises
 						.lookup(hostname, { family: 4 })
 						.then(({ address }) => {
@@ -110,6 +116,10 @@ export default async function Page() {
 				<br />
 				<span>
 					Your current location: <GetGeo />
+				</span>
+				<br />
+				<span>
+					Your current location (GeoIP): <GetGeoIP />
 				</span>
 				<br />
 				<GetParams />
