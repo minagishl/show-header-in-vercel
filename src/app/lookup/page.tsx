@@ -13,6 +13,7 @@ const cache = new LRUCache({
 
 type list = {
 	hostname?: string;
+	lookup?: string;
 	device?: string;
 };
 
@@ -53,10 +54,18 @@ export default async function Page() {
 					reject(error);
 				} else {
 					cache.set(ip, data);
-					resolve({
-						hostname: hostname,
-						device: connectionType(hostname),
-					});
+					dns.promises
+						.lookup(hostname, { family: 4 })
+						.then(({ address }) => {
+							resolve({
+								hostname: hostname,
+								lookup: address,
+								device: connectionType(hostname),
+							});
+						})
+						.catch((error) => {
+							console.log(error);
+						});
 				}
 			});
 		});
@@ -77,6 +86,14 @@ export default async function Page() {
 	return (
 		<>
 			<span>Your current network host name: {data.hostname}</span>
+			<br />
+			<span>iPv4 host name positive pull: {data.lookup}</span>
+			<br />
+			{ip === data.lookup ? (
+				<span>IP address and host name match.</span>
+			) : (
+				<span>IP address and host name do not match.</span>
+			)}
 			<br />
 			<span>Your current device: {data.device}</span>
 			<br />
