@@ -1,6 +1,6 @@
 'use strict';
 
-import dns from 'dns';
+import dns, { lookup } from 'dns';
 import GetGeo from '@/components/GetGeo';
 import { headers } from 'next/headers';
 import { LRUCache } from 'lru-cache';
@@ -83,6 +83,16 @@ export default async function Page() {
 		}
 	}
 
+	function ipMatch(ip: string | null, lookup: string | undefined): boolean {
+		if (ip === '8.8.8.8' || ip === '8.8.4.4') {
+			return lookup === '8.8.8.8' || lookup === '8.8.4.4';
+		} else if (ip === '1.1.1.1' || ip === '1.0.0.1') {
+			return lookup === '1.1.1.1' || lookup === '1.0.0.1';
+		} else {
+			return ip === lookup;
+		}
+	}
+
 	return (
 		<div className='markdown-body'>
 			<article className='prose max-w-full'>
@@ -90,7 +100,7 @@ export default async function Page() {
 				<br />
 				<span>iPv4 host name positive pull: {data.lookup}</span>
 				<br />
-				{ip === data.lookup ? (
+				{ipMatch(ip, data.lookup) ? (
 					<span>IP address and host name match.</span>
 				) : (
 					<span>IP address and host name do not match.</span>
