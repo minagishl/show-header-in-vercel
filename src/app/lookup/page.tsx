@@ -6,7 +6,6 @@ import { headers } from 'next/headers';
 import { LRUCache } from 'lru-cache';
 import mobile from 'is-mobile';
 import GetParams from '@/components/GetParams';
-import { useSearchParams } from 'next/navigation';
 
 const cache = new LRUCache({
 	max: 500, // The maximum size of the cache
@@ -22,10 +21,6 @@ type list = {
 export default async function Page() {
 	let data: list = {};
 	const domains: string[] = ['spmode.ne.jp', 'au-net.ne.jp'];
-	const params = useSearchParams();
-
-	// Query string
-	const language = params.get('language') || 'en';
 
 	// User IP address
 	const headersList = headers();
