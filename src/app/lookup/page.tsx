@@ -11,17 +11,17 @@ const cache = new LRUCache({
 });
 
 type list = {
-	hostname: string;
+	hostname?: string;
 	device?: string;
 };
 
-export default function Page() {
-	let data: list | undefined;
+export default async function Page() {
+	let data: list = {};
 
 	// User IP address
 	const headersList = headers();
 	const ip = headersList.get('host')?.includes('localhost')
-		? '1.1.1.1'
+		? '1.1.1.1' // Cloudflare DNS
 		: headersList.get('x-forwarded-for') === 'string'
 		? headersList.get('x-forwarded-for')
 		: headersList.get('x-vercel-proxied-for') || headersList.get('x-real-ip');
@@ -33,22 +33,33 @@ export default function Page() {
 		data = cache.get(ip) as list;
 
 		if (!data) {
-			dns.lookupService(ip, 0, (error, hostname) => {
-				if (error) {
+			await lookupService(ip)
+				.then((result) => {
+					data = result;
+				})
+				.catch((error) => {
 					console.log(error);
-				} else {
-					data = {
-						hostname: hostname,
-						device: connectionType(hostname),
-					};
-					cache.set(ip, data);
-					// console.log('cache set');
-				}
-			});
+				});
 		}
 	}
 
-	function connectionType(hostname: string) {
+	function lookupService(ip: string): Promise<list> {
+		return new Promise((resolve, reject) => {
+			dns.lookupService(ip, 0, (error, hostname) => {
+				if (error) {
+					reject(error);
+				} else {
+					cache.set(ip, data);
+					resolve({
+						hostname: hostname,
+						device: connectionType(hostname),
+					});
+				}
+			});
+		});
+	}
+
+	function connectionType(hostname: string): string {
 		if (hostname.includes('spmode.ne.jp')) {
 			return 'smart phone';
 		} else {
@@ -58,9 +69,9 @@ export default function Page() {
 
 	return (
 		<>
-			<span>Your current network host name: {data ? data.hostname : ''}</span>
+			<span>Your current network host name: {data.hostname}</span>
 			<br />
-			<span>Your current device: {data ? data.device : ''}</span>
+			<span>Your current device: {data.device}</span>
 			<br />
 			<span>
 				Your current location: <GetGeo />

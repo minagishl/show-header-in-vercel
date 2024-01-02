@@ -33,28 +33,43 @@ type geo = {
 export default function GetGeo() {
 	const [geo, setGeo] = useState<geo | null>(null);
 
+	function getCurrentPosition(options?: PositionOptions): Promise<GeolocationPosition> {
+		return new Promise((resolve, reject) => {
+			navigator.geolocation.getCurrentPosition(
+				(position) => resolve(position as GeolocationPosition),
+				(error) => reject(error as GeolocationPositionError),
+				options || {}
+			);
+		});
+	}
+
 	useEffect(() => {
 		if (navigator.geolocation) {
-			const watcher = navigator.geolocation.watchPosition(
-				async (position) => {
+			// Get the user's current position
+			getCurrentPosition({ maximumAge: 5000, enableHighAccuracy: true })
+				.then((position) => {
 					const { latitude, longitude } = position.coords;
-					const response = await fetch(
-						`https://nominatim.openstreetmap.org/reverse?format=json&accept-language=en&lat=${latitude}&lon=${longitude}`
-					);
-					const data = (await response.json()) as geo;
-					setGeo(data);
-				},
-				(error) => {
-					console.log('Failed to acquire current location', error);
-				}
-			);
 
-			// When the component is unmounted, clear the geolocation watcher
-			return () => navigator.geolocation.clearWatch(watcher);
+					// Get the user's location from the latitude & longitude
+					fetch(
+						`https://nominatim.openstreetmap.org/reverse?format=json&accept-language=en&lat=${latitude}&lon=${longitude}`
+					)
+						.then((response) => response.json())
+						.then((data) => {
+							setGeo(data);
+						})
+						.catch((error) => {
+							console.log(error);
+						});
+				})
+				.catch((error) => {
+					console.log('Failed to acquire current location', error);
+				});
 		} else {
 			console.log('Geolocation is not supported by this browser.');
 		}
 	}, []);
 
-	return <span>{geo ? geo.display_name : ''}</span>;
+	// Takes a long time to load the first time.
+	return <span>{geo ? geo.display_name : 'We are in the process of acquiring...'}</span>;
 }
