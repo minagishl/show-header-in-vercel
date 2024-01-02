@@ -72,7 +72,7 @@ export default async function Page() {
 	}
 
 	function connectionType(hostname: string | undefined): string {
-		if (!(typeof hostname === 'undefined') && domains.some((domain) => hostname.includes(domain))) {
+		if (hostname && domains.some((domain) => hostname.includes(domain))) {
 			if (mobile({ ua: String(headersList.get('User-Agent')) })) {
 				return 'Mobile Telecommunications Phone';
 			} else {
