@@ -17,7 +17,8 @@ type list = {
 
 export default async function Page() {
 	let data: list = {};
-	const ipv4Hostname: string[] = ['spmode.ne.jp', 'au-net.ne.jp'];
+
+	const domains: string[] = ['spmode.ne.jp', 'au-net.ne.jp'];
 
 	// User IP address
 	const headersList = headers();
@@ -61,7 +62,7 @@ export default async function Page() {
 	}
 
 	function connectionType(hostname: string): string {
-		if (ipv4Hostname.includes(hostname)) {
+		if (domains.some((domain) => hostname.includes(domain))) {
 			return 'smart phone';
 		} else {
 			return 'Unknown';
