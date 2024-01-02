@@ -4,6 +4,7 @@ import dns from 'dns';
 import GetGeo from '@/components/GetGeo';
 import { headers } from 'next/headers';
 import { LRUCache } from 'lru-cache';
+import mobile from 'is-mobile';
 
 const cache = new LRUCache({
 	max: 500, // The maximum size of the cache
@@ -63,7 +64,11 @@ export default async function Page() {
 
 	function connectionType(hostname: string): string {
 		if (domains.some((domain) => hostname.includes(domain))) {
-			return 'smart phone';
+			if (mobile({ ua: navigator.userAgent })) {
+				return 'Mobile Telecommunications Phone';
+			} else {
+				return 'Mobile communication, but not a phone.';
+			}
 		} else {
 			return 'Unknown';
 		}
