@@ -13,22 +13,24 @@ const cache = new LRUCache({
 });
 
 type list = {
-	hostname?: string;
-	lookup?: string;
-	device?: string;
+	hostname?: string | null;
+	lookup?: string | null;
+	device?: string | null;
 };
 
 export default async function Page() {
-	let data: list = {};
+	let data: list | null = {};
 	const domains: string[] = ['spmode.ne.jp', 'au-net.ne.jp'];
 
 	// User IP address
 	const headersList = headers();
-	const ip = headersList.get('host')?.includes('localhost')
+	const ip: string | null = headersList.get('host')?.includes('localhost')
 		? '1.1.1.1' // Cloudflare DNS
 		: headersList.get('x-forwarded-for') === 'string'
 		? headersList.get('x-forwarded-for')
 		: headersList.get('x-vercel-proxied-for') || headersList.get('x-real-ip');
+
+	// Debug IP address: 104.28.233.45
 
 	// User host name
 	if (!ip || ip === '::1' || ip === '') {
@@ -42,9 +44,7 @@ export default async function Page() {
 					data = result;
 					cache.set(ip, data);
 				})
-				.catch((error) => {
-					console.log(error);
-				});
+				.catch((_) => {});
 		}
 	}
 
@@ -60,7 +60,7 @@ export default async function Page() {
 							resolve({
 								hostname: hostname,
 								lookup: address,
-								device: hostname ? connectionType(hostname) : 'Unknown',
+								device: connectionType(hostname),
 							});
 						})
 						.catch((error) => {
@@ -71,10 +71,8 @@ export default async function Page() {
 		});
 	}
 
-	function connectionType(hostname: string | undefined): string {
-		if (!hostname) return 'Unknown';
-
-		if (domains.some((domain) => hostname.includes(domain))) {
+	function connectionType(hostname: string | null): string {
+		if (hostname && domains.some((domain) => hostname.includes(domain))) {
 			if (mobile({ ua: String(headersList.get('User-Agent')) })) {
 				return 'Mobile Telecommunications Phone';
 			} else {
@@ -85,7 +83,7 @@ export default async function Page() {
 		}
 	}
 
-	function ipMatch(ip: string | null, lookup: string | undefined): boolean {
+	function ipMatch(ip: string | null, lookup: any): boolean {
 		if (ip === '8.8.8.8' || ip === '8.8.4.4') {
 			return lookup === '8.8.8.8' || lookup === '8.8.4.4';
 		} else if (ip === '1.1.1.1' || ip === '1.0.0.1') {
@@ -98,17 +96,25 @@ export default async function Page() {
 	return (
 		<div className='markdown-body'>
 			<article className='prose max-w-full'>
-				<span>Your current network host name: {data.hostname}</span>
+				{typeof data === 'undefined' ? (
+					<>
+						<span>Disengage the VPN. Cannot get it right.</span>
+						<br />
+					</>
+				) : (
+					''
+				)}
+				<span>Your current network host name: {data?.hostname ? data.hostname : 'Unknown'}</span>
 				<br />
-				<span>iPv4 host name positive pull: {data.lookup}</span>
+				<span>iPv4 host name positive pull: {data?.lookup ? data.lookup : 'Unknown'}</span>
 				<br />
-				{ipMatch(ip, data.lookup) ? (
+				{ipMatch(ip, data?.lookup ? data.lookup : 'Unknown') ? (
 					<span>IP address and host name match.</span>
 				) : (
 					<span>IP address and host name do not match.</span>
 				)}
 				<br />
-				<span>Your current device: {data.device}</span>
+				<span>Your current device: {data?.device ? data.device : 'Unknown'}</span>
 				<br />
 				<span>
 					Your current location: <GetGeo />
