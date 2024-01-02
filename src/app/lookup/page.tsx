@@ -17,6 +17,7 @@ type list = {
 
 export default async function Page() {
 	let data: list = {};
+	const ipv4Hostname: string[] = ['spmode.ne.jp', 'au-net.ne.jp'];
 
 	// User IP address
 	const headersList = headers();
@@ -42,8 +43,6 @@ export default async function Page() {
 				});
 		}
 	}
-
-	const ipv4Hostname = ['spmode.ne.jp', 'au-net.ne.jp'];
 
 	function lookupService(ip: string): Promise<list> {
 		return new Promise((resolve, reject) => {
