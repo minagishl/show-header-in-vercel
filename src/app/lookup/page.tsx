@@ -60,7 +60,7 @@ export default async function Page() {
 							resolve({
 								hostname: hostname,
 								lookup: address,
-								device: connectionType(hostname),
+								device: hostname ? connectionType(hostname) : 'Unknown',
 							});
 						})
 						.catch((error) => {
