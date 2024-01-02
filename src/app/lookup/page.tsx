@@ -64,7 +64,7 @@ export default async function Page() {
 
 	function connectionType(hostname: string): string {
 		if (domains.some((domain) => hostname.includes(domain))) {
-			if (mobile({ ua: navigator.userAgent })) {
+			if (mobile({ ua: String(headersList.get('User-Agent')) })) {
 				return 'Mobile Telecommunications Phone';
 			} else {
 				return 'Mobile communication, but not a phone.';
