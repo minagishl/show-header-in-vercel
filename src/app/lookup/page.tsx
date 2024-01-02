@@ -43,6 +43,8 @@ export default async function Page() {
 		}
 	}
 
+	const ipv4Hostname = ['spmode.ne.jp', 'au-net.ne.jp'];
+
 	function lookupService(ip: string): Promise<list> {
 		return new Promise((resolve, reject) => {
 			dns.lookupService(ip, 0, (error, hostname) => {
@@ -60,7 +62,7 @@ export default async function Page() {
 	}
 
 	function connectionType(hostname: string): string {
-		if (hostname.includes('spmode.ne.jp')) {
+		if (ipv4Hostname.includes(hostname)) {
 			return 'smart phone';
 		} else {
 			return 'Unknown';
