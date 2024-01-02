@@ -2,7 +2,6 @@
 
 import dns from 'dns';
 import GetGeo from '@/components/GetGeo';
-import GetGeoIP from '@/components/GetGeoIP';
 import { headers } from 'next/headers';
 import { LRUCache } from 'lru-cache';
 import mobile from 'is-mobile';
@@ -116,10 +115,6 @@ export default async function Page() {
 				<br />
 				<span>
 					Your current location: <GetGeo />
-				</span>
-				<br />
-				<span>
-					Your current location (GeoIP): <GetGeoIP />
 				</span>
 				<br />
 				<GetParams />
