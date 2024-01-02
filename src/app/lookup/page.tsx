@@ -5,6 +5,7 @@ import GetGeo from '@/components/GetGeo';
 import { headers } from 'next/headers';
 import { LRUCache } from 'lru-cache';
 import mobile from 'is-mobile';
+import GetParams from '@/components/GetParams';
 
 const cache = new LRUCache({
 	max: 500, // The maximum size of the cache
@@ -19,7 +20,6 @@ type list = {
 
 export default async function Page() {
 	let data: list = {};
-
 	const domains: string[] = ['spmode.ne.jp', 'au-net.ne.jp'];
 
 	// User IP address
@@ -84,22 +84,26 @@ export default async function Page() {
 	}
 
 	return (
-		<>
-			<span>Your current network host name: {data.hostname}</span>
-			<br />
-			<span>iPv4 host name positive pull: {data.lookup}</span>
-			<br />
-			{ip === data.lookup ? (
-				<span>IP address and host name match.</span>
-			) : (
-				<span>IP address and host name do not match.</span>
-			)}
-			<br />
-			<span>Your current device: {data.device}</span>
-			<br />
-			<span>
-				Your current location: <GetGeo />
-			</span>
-		</>
+		<div className='markdown-body'>
+			<article className='prose max-w-full'>
+				<span>Your current network host name: {data.hostname}</span>
+				<br />
+				<span>iPv4 host name positive pull: {data.lookup}</span>
+				<br />
+				{ip === data.lookup ? (
+					<span>IP address and host name match.</span>
+				) : (
+					<span>IP address and host name do not match.</span>
+				)}
+				<br />
+				<span>Your current device: {data.device}</span>
+				<br />
+				<span>
+					Your current location: <GetGeo />
+				</span>
+				<br />
+				<GetParams />
+			</article>
+		</div>
 	);
 }
