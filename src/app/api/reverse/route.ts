@@ -2,7 +2,7 @@ import { LRUCache } from 'lru-cache';
 
 const cache = new LRUCache({
   max: 500, // The maximum size of the cache
-  ttl: 1000 * 60 * 30, // how long to live in ms
+  ttl: 1000 * 60 * 60 * 24 * 7, // how long to live in ms
 });
 
 export async function GET(request: Request) {
