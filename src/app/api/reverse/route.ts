@@ -23,8 +23,12 @@ export async function GET(request: Request) {
   }
 
   const formatter: string[] = ['xml', 'json', 'jsonv2', 'geojson', 'geocodejson'];
+  const yahooFormatter: string[] = ['xml', 'json'];
 
-  if (!formatter.some((formatter) => format.includes(formatter))) {
+  if (
+    !formatter.some((formatter) => format.includes(formatter)) ||
+    !yahooFormatter.some((formatter) => format.includes(formatter))
+  ) {
     return new Response('Please specify the correct format', {
       status: 400,
       headers: {
@@ -47,22 +51,37 @@ export async function GET(request: Request) {
       },
     });
   } else {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=${format}&accept-language=${language}&lat=${latitude}&lon=${longitude}`,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    ).catch((err) => {
-      console.log(err);
-      return new Response('An error has occurred.', {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+    let res;
+    if (process.env.APP_ID) {
+      res = await fetch(
+        `https://map.yahooapis.jp/geoapi/V1/reverseGeoCoder?output=${format}&lat=${latitude}&lon=${longitude}&appid=${process.env.APP_ID}`
+      ).catch((err) => {
+        console.log(err);
+        return new Response('An error has occurred.', {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
       });
-    });
+    } else {
+      res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=${format}&accept-language=${language}&lat=${latitude}&lon=${longitude}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      ).catch((err) => {
+        console.log(err);
+        return new Response('An error has occurred.', {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+      });
+    }
 
     if (format === 'xml') {
       const data = await res.text();

@@ -30,8 +30,47 @@ type geo = {
   boundingbox: string[];
 };
 
+type yahooGeo = {
+  data: {
+    ResultInfo: {
+      Count: number;
+      Total: number;
+      Start: number;
+      Latency: number;
+      Status: number;
+      Description: string;
+      Copyright: string;
+      CompressType: string;
+    };
+    Feature: [
+      {
+        Geometry: {
+          Type: string;
+          Coordinates: string;
+        };
+        Property: {
+          Country: {
+            Code: string;
+            Name: string;
+          };
+          Address: string;
+          AddressElement: [
+            {
+              Name: string;
+              Kana: string;
+              Level: string;
+              Code?: string;
+            },
+          ];
+        };
+      },
+    ];
+  };
+};
+
 export default function GetGeo() {
-  const [geo, setGeo] = useState<geo | null>(null);
+  const [geo, setGeo] = useState<geo | yahooGeo | null>(null);
+  const [address, setAddress] = useState<string>('');
 
   function getCurrentPosition(options?: PositionOptions): Promise<GeolocationPosition> {
     return new Promise((resolve, reject) => {
@@ -55,6 +94,14 @@ export default function GetGeo() {
             .then((response) => response.json())
             .then((data) => {
               setGeo(data);
+              if (geo) {
+                if ('data' in geo) {
+                  setAddress(geo.data.Feature[0].Property.Address);
+                } else if ('display_name' in geo) {
+                  // Check if 'display_name' property exists in geo
+                  setAddress(geo.display_name); // Access 'display_name' property
+                }
+              }
             })
             .catch((error) => {
               console.log(error);
@@ -66,8 +113,9 @@ export default function GetGeo() {
     } else {
       console.log('Geolocation is not supported by this browser.');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Takes a long time to load the first time.
-  return <span>{geo ? geo.display_name : 'We are in the process of acquiring...'}</span>;
+  return <span>{geo ? address : 'We are in the process of acquiring...'}</span>;
 }
